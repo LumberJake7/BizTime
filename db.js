@@ -1,19 +1,21 @@
-/** Database setup for BizTime. */
 require("dotenv").config();
-const { Client } = require("pg");
+const { Pool } = require("pg");
 
-const DB_URI = `postgresql://${process.env.DB_USER}:${process.env.DB_PASSWORD}@${process.env.DB_HOST}/${process.env.DB_NAME}`;
-
-let db = new Client({
-  connectionString: DB_URI,
+// Define a pool of connections
+const pool = new Pool({
+  user: process.env.DB_USER || "defaultUser",
+  host: process.env.DB_HOST || "localhost",
+  database: process.env.DB_NAME || "biztime_test",
+  password: process.env.DB_PASSWORD,
+  port: process.env.DB_PORT || 5432,
 });
 
-db.connect((err) => {
-  if (err) {
-    console.error("Failed to connect to the database:", err);
-  } else {
-    console.log("Successfully connected to the database.");
-  }
+pool.on("connect", () => {
+  console.log("Successfully connected to the database.");
 });
 
-module.exports = db;
+pool.on("error", (err) => {
+  console.error("Failed to connect to the database:", err);
+});
+
+module.exports = pool;
